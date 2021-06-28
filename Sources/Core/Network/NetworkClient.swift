@@ -15,14 +15,18 @@ public struct NetworkClient {
   
   private let session: Session
   
-  private init(_ session: Session) {
+  private init(_ session: Session = .default) {
     self.session = session
   }
   
-  public func request(
-    _ convertible: URLRequestConvertible
-  ) -> DataRequest {
-    session.request(convertible).validate()
+  public func request<T: Decodable>(
+    _ convertible: URLRequestConvertible,
+    completion: @escaping (Result<T, AFError>) -> Void
+  ) {
+    session.request(convertible).validate().responseDecodable(of: T.self) { data in
+      setQuota(fromResponse: data.response)
+      completion(data.result)
+    }
   }
   
   public func upload(
@@ -36,20 +40,36 @@ public struct NetworkClient {
       ).validate()
   }
   
-  public func upload(
+  public func upload<T: Decodable>(
     multipartFormData: @escaping (MultipartFormData) -> Void,
-    to convertible: URLConvertible
-  ) -> UploadRequest {
+    to convertible: URLConvertible,
+    completion: @escaping (Result<T, AFError>) -> Void
+  ) {
     let headers: HTTPHeaders = [
       "Content-type": "multipart/form-data",
       "Content-Disposition" : "form-data"
     ]
-    return session
-      .upload(
-        multipartFormData: multipartFormData,
-        to: convertible,
-        method: .post,
-        headers: headers
-      )
+    session.upload(
+      multipartFormData: multipartFormData,
+      to: convertible,
+      method: .post,
+      headers: headers
+    )
+    .uploadProgress { progress in
+      print("Upload Progress: \(progress.fractionCompleted)")
+    }
+    .responseDecodable(of: T.self) { data in
+      setQuota(fromResponse: data.response)
+      completion(data.result)
+    }
+  }
+  
+  private func setQuota(fromResponse response: HTTPURLResponse?) {
+    if let aHeader = response?.allHeaderFields["x-api-quota-used"] as? String,
+       let quotaUsed = Float(aHeader) {
+      QuotaManager.shared.set(quotaUsed)
+    } else {
+      print("Unable to get \"x-api-quota-used\" header field from response")
+    }
   }
 }

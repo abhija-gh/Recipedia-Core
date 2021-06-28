@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-public protocol ListPresenterProtocol: class {
+public protocol ListPresenterProtocol: AnyObject {
   associatedtype Request
   associatedtype Response
   associatedtype Interactor

@@ -12,7 +12,6 @@ let package = Package(
       targets: ["Core"]),
   ],
   dependencies: [
-    .package(name: "Realm", url: "https://github.com/realm/realm-cocoa.git", from: "10.5.1"),
     .package(url: "https://github.com/exyte/ActivityIndicatorView.git", from: "0.0.1"),
     .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.4.0")),
   ],
@@ -20,7 +19,6 @@ let package = Package(
     .target(
       name: "Core",
       dependencies: [
-        .product(name: "RealmSwift", package: "Realm"),
         "Alamofire",
         "ActivityIndicatorView"
       ]

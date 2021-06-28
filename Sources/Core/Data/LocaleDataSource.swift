@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-public protocol LocaleDataSource: class {
+public protocol LocaleDataSource: AnyObject {
   associatedtype Request
   associatedtype Response
   

@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-public protocol DataSource: class {
+public protocol DataSource: AnyObject {
   associatedtype Request
   associatedtype Response
   
